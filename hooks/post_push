@@ -10,19 +10,25 @@ VIRTUAL_IMAGE=$(echo "${IMAGE_NAME}" | rev | cut -d- -f2- | rev )
 
 AMD64_IMAGE="$VIRTUAL_IMAGE-amd64"
 ARM64_IMAGE="$VIRTUAL_IMAGE-arm64v8"
-ARM32_IMAGE="$VIRTUAL_IMAGE-arm32v7"
+ARM32_IMAGEv7="$VIRTUAL_IMAGE-arm32v7"
+ARM32_IMAGEv6="$VIRTUAL_IMAGE-arm32v6"
 
 echo "checking if ${AMD64_IMAGE} Manifest exists"
 if ! ./docker-cli manifest inspect ${AMD64_IMAGE}; then AMD64_IMAGE='' ; fi
-echo "checking if ${ARM32_IMAGE} Manifest exists"
-if ! ./docker-cli manifest inspect ${ARM32_IMAGE}; then ARM32_IMAGE='' ; fi
+echo "checking if ${ARM32v6_IMAGE} Manifest exists"
+if ! ./docker-cli manifest inspect ${ARM32_IMAGEv6}; then ARM32_IMAGEv6='' ; fi
+echo "checking if ${ARM32v7_IMAGE} Manifest exists"
+if ! ./docker-cli manifest inspect ${ARM32_IMAGEv7}; then ARM32_IMAGEv7='' ; fi
 echo "checking if ${ARM64_IMAGE} Manifest exists"
 if ! ./docker-cli manifest inspect ${ARM64_IMAGE}; then ARM64_IMAGE='' ; fi
 
 echo "Creating multiarch manifest"
-./docker-cli manifest create $VIRTUAL_IMAGE $AMD64_IMAGE $ARM32_IMAGE $ARM64_IMAGE
-if [ -n "${ARM32_IMAGE}" ]; then
-  ./docker-cli manifest annotate $VIRTUAL_IMAGE $ARM32_IMAGE --os linux --arch arm
+./docker-cli manifest create $VIRTUAL_IMAGE $AMD64_IMAGE $ARM32_IMAGEv6 $ARM32_IMAGEv7 $ARM64_IMAGE
+if [ -n "${ARM32_IMAGEv6}" ]; then
+  ./docker-cli manifest annotate $VIRTUAL_IMAGE $ARM32_IMAGEv6 --os linux --arch arm --variant v6
+fi
+if [ -n "${ARM32_IMAGEv7}" ]; then
+  ./docker-cli manifest annotate $VIRTUAL_IMAGE $ARM32_IMAGEv7 --os linux --arch arm --variant v7
 fi
 if [ -n "${ARM64_IMAGE}" ]; then
 ./docker-cli manifest annotate $VIRTUAL_IMAGE $ARM64_IMAGE --os linux --arch arm64
